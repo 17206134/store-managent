@@ -56,7 +56,7 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item>
+      <el-form-item style="float: right">
         <el-button
           type="primary"
           icon="el-icon-search"
@@ -129,7 +129,7 @@
       <el-table-column label="分公司名称" align="center" prop="branchCompany" />
       <el-table-column label="已绑定的卡" align="left" prop="flowCardList">
         <template slot-scope="scope">
-          <div>{{ scope.rows.flowCardList | dealListByCard }}</div>
+          <div>{{ scope.row.flowCardList | dealListByCard }}</div>
         </template>
       </el-table-column>
 
@@ -315,12 +315,10 @@ export default {
       rules: {},
     };
   },
-  filter: {
+  filters: {
     dealListByCard(list) {
-      if (!list.length) return "-";
-      return list.reduce((total, item) => {
-        return total + item + "、";
-      }, "");
+      if (!list || !list.length) return "-"; // 增加对null/undefined的判断
+      return list.map((item) => item.cardName).join("、");
     },
   },
   created() {
@@ -419,13 +417,17 @@ export default {
         storeName: row.storeName,
         storeIds: row.storeId,
         bossName: row.bossName,
-        bossPhone: bossPhone,
+        bossPhone: row.bossPhone,
       };
       const storeIds = row.storeId;
       if (storeIds) {
         /** 查询流量卡列表及绑定状态 */
         cardListWithBindStatusList(storeIds).then((res) => {
           this.selectCardList = res.data;
+          this.cardList = res.data
+            ?.filter((o) => o.isBound)
+            ?.map((i) => i.cardId);
+          console.log(this.cardList, "cardListcardList");
         });
       } else {
         this.$modal.msgError("请先选择门店");
