@@ -146,7 +146,12 @@
         >
           <el-table-column type="selection" width="55" align="center" />
           <el-table-column label="订单ID" align="center" prop="orderId" />
-          <el-table-column label="订单号" align="center" prop="orderNo" />
+          <el-table-column
+            label="订单号"
+            width="120"
+            align="center"
+            prop="orderNo"
+          />
           <el-table-column
             label="客户姓名"
             align="center"
@@ -160,6 +165,7 @@
           />
           <el-table-column
             label="订单金额(元)"
+            width="120"
             align="center"
             prop="orderAmount"
           />
