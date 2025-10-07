@@ -16,30 +16,6 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="联盟店ID" prop="storeId">
-        <el-input
-          v-model="queryParams.storeId"
-          placeholder="请输入联盟店ID"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="流量卡ID" prop="cardId">
-        <el-input
-          v-model="queryParams.cardId"
-          placeholder="请输入流量卡ID"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="销售员ID" prop="salesmanId">
-        <el-input
-          v-model="queryParams.salesmanId"
-          placeholder="请输入销售员ID"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
       <el-form-item label="客户姓名" prop="customerName">
         <el-input
           v-model="queryParams.customerName"
@@ -52,14 +28,6 @@
         <el-input
           v-model="queryParams.customerPhone"
           placeholder="请输入客户手机号"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="订单金额" prop="orderAmount">
-        <el-input
-          v-model="queryParams.orderAmount"
-          placeholder="请输入订单金额"
           clearable
           @keyup.enter.native="handleQuery"
         />
@@ -140,12 +108,12 @@
         <el-button
           type="danger"
           plain
-          icon="el-icon-delete"
+          icon="el-icon-circle-check"
           size="mini"
           :disabled="multiple"
-          @click="handleDelete"
+          @click="handleVerify"
           v-hasPermi="['system:order:remove']"
-          >删除</el-button
+          >核销</el-button
         >
       </el-col>
       <el-col :span="1.5">
@@ -164,110 +132,131 @@
         @queryTable="getList"
       ></right-toolbar>
     </el-row>
+    <el-tabs v-model="orderStatus" type="card" @tab-click="getList">
+      <el-tab-pane
+        v-for="i in orderStatusList"
+        :key="i.orderStatusText"
+        :label="i.orderStatusText"
+        :name="i.orderStatus"
+      >
+        <el-table
+          v-loading="loading"
+          :data="orderList"
+          @selection-change="handleSelectionChange"
+        >
+          <el-table-column type="selection" width="55" align="center" />
+          <el-table-column label="订单ID" align="center" prop="orderId" />
+          <el-table-column label="订单号" align="center" prop="orderNo" />
+          <el-table-column
+            label="客户姓名"
+            align="center"
+            prop="customerName"
+          />
+          <el-table-column
+            label="客户手机号"
+            width="160"
+            align="center"
+            prop="customerPhone"
+          />
+          <el-table-column
+            label="订单金额(元)"
+            align="center"
+            prop="orderAmount"
+          />
+          <el-table-column
+            label="订单状态"
+            align="center"
+            prop="orderStatusText"
+          />
+          <el-table-column
+            label="支付状态"
+            align="center"
+            prop="payStatusText"
+          />
+          <el-table-column
+            label="支付二维码URL"
+            align="center"
+            width="200"
+            prop="qrCodeUrl"
+          />
+          <el-table-column
+            label="微信支付订单号"
+            align="center"
+            width="200"
+            prop="wxOrderNo"
+          />
+          <el-table-column
+            label="微信支付交易流水号"
+            align="center"
+            width="200"
+            prop="wxTransactionId"
+          />
+          <el-table-column
+            label="支付时间"
+            align="center"
+            prop="payTime"
+            width="180"
+          />
+          <el-table-column
+            label="订单过期时间"
+            align="center"
+            prop="expireTime"
+            width="180"
+          />
+          <el-table-column
+            label="核销状态"
+            align="center"
+            prop="verifyStatusText"
+          />
+          <el-table-column
+            label="核销时间"
+            align="center"
+            prop="verifyTime"
+            width="180"
+          />
 
-    <el-table
-      v-loading="loading"
-      :data="orderList"
-      @selection-change="handleSelectionChange"
-    >
-      <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="订单ID" align="center" prop="orderId" />
-      <el-table-column label="订单号" align="center" prop="orderNo" />
-      <el-table-column label="联盟店ID" align="center" prop="storeId" />
-      <el-table-column label="流量卡ID" align="center" prop="cardId" />
-      <el-table-column label="销售员ID" align="center" prop="salesmanId" />
-      <el-table-column label="客户姓名" align="center" prop="customerName" />
-      <el-table-column
-        label="客户手机号"
-        width="160"
-        align="center"
-        prop="customerPhone"
-      />
-      <el-table-column label="订单金额" align="center" prop="orderAmount" />
-      <el-table-column label="订单状态" align="center" prop="orderStatus" />
-      <el-table-column label="支付状态" align="center" prop="payStatus" />
-      <el-table-column label="支付方式" align="center" prop="payType" />
-      <el-table-column
-        label="支付二维码URL"
-        align="center"
-        width="200"
-        prop="qrCodeUrl"
-      />
-      <el-table-column
-        label="微信支付订单号"
-        align="center"
-        width="200"
-        prop="wxOrderNo"
-      />
-      <el-table-column
-        label="微信支付交易流水号"
-        align="center"
-        width="200"
-        prop="wxTransactionId"
-      />
-      <el-table-column
-        label="支付时间"
-        align="center"
-        prop="payTime"
-        width="180"
-      >
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.payTime, "{y}-{m}-{d}") }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="订单过期时间"
-        align="center"
-        prop="expireTime"
-        width="180"
-      >
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.expireTime, "{y}-{m}-{d}") }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="核销状态" align="center" prop="verifyStatus" />
-      <el-table-column
-        label="核销时间"
-        align="center"
-        prop="verifyTime"
-        width="180"
-      >
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.verifyTime, "{y}-{m}-{d}") }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="核销人" align="center" prop="verifyBy" />
-      <el-table-column label="备注" align="center" prop="remark" />
-      <el-table-column
-        label="操作"
-        align="center"
-        class-name="small-padding fixed-width"
-      >
-        <template slot-scope="scope">
+          <el-table-column label="核销人" align="center" prop="verifyBy" />
+          <el-table-column
+            label="操作"
+            align="center"
+            class-name="small-padding fixed-width"
+          >
+            <!-- <template slot-scope="scope">
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-delete"
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:order:remove']"
             >删除</el-button
           >
-        </template>
-      </el-table-column>
-    </el-table>
+        </template> -->
+            <template slot-scope="scope">
+              <el-button
+                size="mini"
+                type="text"
+                v-if="scope.row.orderStatus == '1'"
+                @click="handleVerify(scope.row)"
+                v-hasPermi="['system:order:verify']"
+                >核销</el-button
+              >
+            </template>
+          </el-table-column>
+        </el-table>
 
-    <pagination
-      v-show="total > 0"
-      :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
-      @pagination="getList"
-    />
+        <pagination
+          v-show="total > 0"
+          :total="total"
+          :page.sync="queryParams.pageNum"
+          :limit.sync="queryParams.pageSize"
+          @pagination="getList"
+        />
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
 <script>
-import { listOrder, delOrder } from "@/api/system/order";
+import { listOrder, batchVerify } from "@/api/system/order";
 
 export default {
   name: "Order",
@@ -276,7 +265,7 @@ export default {
       // 遮罩层
       loading: true,
       // 选中数组
-      ids: [],
+      selectionList: [],
       // 非单个禁用
       single: true,
       // 非多个禁用
@@ -294,12 +283,8 @@ export default {
         pageNum: 1,
         pageSize: 10,
         orderNo: null,
-        storeId: null,
-        cardId: null,
-        salesmanId: null,
         customerName: null,
         customerPhone: null,
-        orderAmount: null,
         orderStatus: null,
         payStatus: null,
         payType: null,
@@ -312,6 +297,33 @@ export default {
         verifyTime: null,
         verifyBy: null,
       },
+      orderStatus: "all",
+      orderStatusList: [
+        {
+          orderStatus: "all",
+          orderStatusText: "全部",
+        },
+        {
+          orderStatus: "0",
+          orderStatusText: "待支付",
+        },
+        {
+          orderStatus: "1",
+          orderStatusText: "已支付",
+        },
+        {
+          orderStatus: "2",
+          orderStatusText: "已取消",
+        },
+        {
+          orderStatus: "3",
+          orderStatusText: "已退款",
+        },
+        {
+          orderStatus: "4",
+          orderStatusText: "已完成",
+        },
+      ],
     };
   },
   created() {
@@ -321,7 +333,10 @@ export default {
     /** 查询流量卡订单列表 */
     getList() {
       this.loading = true;
-      listOrder(this.queryParams).then((response) => {
+      listOrder({
+        ...this.queryParams,
+        orderStatus: this.orderStatus === "all" ? null : this.orderStatus,
+      }).then((response) => {
         this.orderList = response.rows;
         this.total = response.total;
         this.loading = false;
@@ -339,28 +354,38 @@ export default {
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
-      this.ids = selection.map((item) => item.orderId);
+      this.selectionList = selection;
       this.single = selection.length !== 1;
       this.multiple = !selection.length;
     },
     /** 删除按钮操作 */
-    handleDelete(row) {
-      const orderIds = row.orderId || this.ids;
+    handleVerify(row) {
+      const isNotVerify = this.selectionList.some(
+        (item) => item.orderStatus !== "1"
+      );
+      if (isNotVerify) {
+        return this.$modal.msgError("存在未完成订单，不能核销！");
+      }
+      const orderIds = row.orderId
+        ? [row.orderId]
+        : this.selectionList.map((item) => item.orderId);
       this.$modal
-        .confirm('是否确认删除流量卡订单编号为"' + orderIds + '"的数据项？')
+        .confirm(
+          '是否确认核销订单编号为"' + orderIds.join("、") + '"的数据项？'
+        )
         .then(function () {
-          return delOrder(orderIds);
+          return batchVerify(orderIds);
         })
         .then(() => {
           this.getList();
-          this.$modal.msgSuccess("删除成功");
+          this.$modal.msgSuccess("核销成功");
         })
         .catch(() => {});
     },
     /** 导出按钮操作 */
     handleExport() {
       this.download(
-        "system/order/export",
+        "business/order/export",
         {
           ...this.queryParams,
         },

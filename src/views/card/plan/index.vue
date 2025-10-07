@@ -188,7 +188,7 @@
       <div class="qr-code">
         <!-- 倒计时区域 -->
         <div class="countdown-section">
-          <van-count-down :time="time">
+          <van-count-down :time="time" @finish="timeFinish">
             <template #default="timeData">
               <div class="countdown-container">
                 <span class="time-box">{{ timeData.hours | addZero }}</span>
@@ -200,17 +200,25 @@
               </div>
             </template>
           </van-count-down>
-          <p class="countdown-tip">超时后二维码将失效，请尽快操作</p>
+          <p class="countdown-tip">
+            {{ isTimeOut ? "订单超时" : "超时后二维码将失效，请尽快操作" }}
+          </p>
         </div>
 
         <!-- 二维码区域 -->
         <div class="qrcode-container">
-          <div class="qrcode-wrapper" id="qrcode" ref="qrcode"></div>
-          <p class="qrcode-tip">请尽快使用微信扫码完成支付</p>
+          <div
+            class="qrcode-wrapper"
+            :class="{ 'filter-img': isTimeOut }"
+            id="qrcode"
+            ref="qrcode"
+          ></div>
+          <div class="mask" v-if="isTimeOut">该二维码已失效</div>
+          <p class="qrcode-tip" v-if="!isTimeOut">请尽快使用微信扫码完成支付</p>
         </div>
 
         <!-- 链接与复制区域 -->
-        <div class="link-section">
+        <div class="link-section" v-if="!isTimeOut">
           <p class="link-label">支付链接</p>
           <div class="link-container">
             <span class="link-text" :title="linkUrl">{{ linkUrl }}</span>
@@ -233,13 +241,14 @@ import { listStore } from "@/api/system/store";
 import { listCard } from "@/api/system/card";
 import { createOrder } from "@/api/system/order";
 import QRCode from "qrcodejs2";
-const ORDER_TIME = 15 * 60 * 60 * 1000;
+const ORDER_TIME = 15 * 60 * 60 * 1000; // 默认订单超时时间15分钟
 export default {
   name: "Plan",
   data() {
     return {
       btnLoading: false, // 防重复点击loading
       time: 0, // 15分钟订单有效期
+      timeout: false, // 订单超时
       linkUrl: "",
       copySuccess: false,
       showQrCode: false, // 二维码弹窗
@@ -264,6 +273,11 @@ export default {
       return String(val).padStart(2, 0);
     },
   },
+  computed: {
+    isTimeOut() {
+      return this.timeout || this.time === 0;
+    },
+  },
   created() {
     // 所有的门店
     listStore({ pageNum: 1, pageSize: 999 }).then((res) => {
@@ -285,12 +299,21 @@ export default {
           storeId,
         })
           .then((res) => {
-            this.showQrCode = true;
-            const orderNo = 1;
-            console.log(res, "订单号");
-            this.time = ORDER_TIME;
-            this.linkUrl = `${window.location.origin}/scanCode/${orderNo}`;
-            this.getUrlCanvasBase64(this.linkUrl);
+            if (res.data.orderId) {
+              this.timeout = false; // 重置订单状态
+              this.showQrCode = true;
+              console.log(res, "订单号");
+              this.time = ORDER_TIME;
+              this.linkUrl = `${window.location.origin}/scanCode/${res.data.orderId}`;
+              this.getUrlCanvasBase64(this.linkUrl);
+            } else {
+              this.$modal.msgError("生成订单失败");
+              this.timeout = true;
+            }
+          })
+          .catch((err) => {
+            console.log(err, "订单错误信息");
+            this.timeout = true;
           })
           .finally(() => {
             this.btnLoading = false;
@@ -300,6 +323,10 @@ export default {
     /** 复制链接成功 */
     clipboardSuccess() {
       this.copySuccess = true;
+    },
+    timeFinish() {
+      console.log("倒计时结束");
+      this.timeout = true;
     },
     async getUrlCanvasBase64(url) {
       await this.$nextTick();
@@ -614,6 +641,7 @@ $danger-color: #ef4444;
       flex-direction: column;
       align-items: center;
       margin-bottom: 25px;
+      position: relative;
 
       .qrcode-wrapper {
         width: 180px;
@@ -624,6 +652,23 @@ $danger-color: #ef4444;
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         margin-bottom: 10px;
+      }
+      .filter-img {
+        filter: blur(10px);
+      }
+      .mask {
+        position: absolute;
+        background: rgba($color: #000000, $alpha: 0.6);
+        color: #fff;
+        font-size: 14px;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 180px;
+        height: 180px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
 
       .qrcode-tip {

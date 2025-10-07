@@ -91,7 +91,13 @@ export const constantRoutes = [
   {
     // 用户扫码下单页
     path: "/scanCode/:id(\\d+)",
-    component: () => import("@/views/card/plan/code"),
+    component: () => import("@/views/card/plan/scanCode"),
+    hidden: true,
+  },
+  {
+    // 用户下单成功页面
+    path: "/orderSuccess",
+    component: () => import("@/views/card/plan/orderSuccess"),
     hidden: true,
   },
 ];

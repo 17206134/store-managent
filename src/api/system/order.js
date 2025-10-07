@@ -51,3 +51,20 @@ export function createOrder(data) {
     data: data,
   });
 }
+
+// 查询订单状态信息
+export function checkOrderStatus(orderId) {
+  return request({
+    url: "/business/order/checkStatus/" + orderId,
+    method: "get",
+  });
+}
+
+// 批量核销订单
+export function batchVerify(data) {
+  return request({
+    url: "/business/order/batchVerify",
+    method: "put",
+    data: data,
+  });
+}
