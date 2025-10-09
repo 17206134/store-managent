@@ -104,7 +104,7 @@ export default {
   name: "PlanCode",
   data() {
     return {
-      remainingSeconds: -1, // 订单剩余时间
+      remainingSeconds: 10000 * 60 * 60 * 1000, // 订单剩余时间
       orderStatus: null, // 订单状态 0=待支付,1=已支付,2=已取消,3=已退款,4=已完成
       orderId: null,
       btnLoading: false, // 防重复点击loading
@@ -171,15 +171,15 @@ export default {
               customerName,
               customerPhone,
             } = res.data.paymentRecord;
-            const { productName } = res.data.flowCard;
-            this.$router.push({
+            const { cardName } = res.data.flowCard;
+            this.$router.replace({
               path: "/orderSuccess",
               query: {
                 info: JSON.stringify({
                   orderId,
                   createTime,
                   payAmount,
-                  productName,
+                  cardName,
                   customerName,
                   customerPhone,
                 }),

@@ -78,7 +78,7 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
-          v-hasPermi="['system:store:add']"
+          v-hasPermi="['card:store:add']"
           >新增</el-button
         >
       </el-col>
@@ -90,7 +90,7 @@
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['system:store:remove']"
+          v-hasPermi="['card:store:remove']"
           >删除</el-button
         >
       </el-col>
@@ -101,7 +101,7 @@
           icon="el-icon-download"
           size="mini"
           @click="handleExport"
-          v-hasPermi="['system:store:export']"
+          v-hasPermi="['card:store:export']"
           >导出</el-button
         >
       </el-col>
@@ -144,8 +144,9 @@
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-edit"
+            icon="el-icon-paperclip"
             @click="bindCard(scope.row)"
+            v-hasPermi="['card:store:bind']"
             >绑卡</el-button
           >
           <el-button
@@ -153,7 +154,7 @@
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:store:edit']"
+            v-hasPermi="['card:store:edit']"
             >修改</el-button
           >
           <el-button
@@ -161,7 +162,7 @@
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
-            v-hasPermi="['system:store:remove']"
+            v-hasPermi="['card:store:remove']"
             >删除</el-button
           >
         </template>

@@ -30,7 +30,7 @@
       </div>
       <div class="info-row">
         <div class="info-label">商品名称：</div>
-        <div class="info-value">{{ orderInfo.productName }}</div>
+        <div class="info-value">{{ orderInfo.cardName }}</div>
       </div>
       <div class="info-row">
         <div class="info-label">支付时间：</div>

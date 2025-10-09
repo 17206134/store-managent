@@ -166,6 +166,7 @@
             native-type="submit"
             :disabled="!form.storeName || !form.cardName"
             class="submit-btn"
+            v-hasPermi="['card:plan:submit']"
           >
             提交订单
           </van-button>
