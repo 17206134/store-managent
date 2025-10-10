@@ -8,10 +8,10 @@
       v-show="showSearch"
       label-width="120px"
     >
-      <el-form-item label="联盟店名称" prop="storeName">
+      <el-form-item label="门店名称" prop="storeName">
         <el-input
           v-model="queryParams.storeName"
-          placeholder="请输入联盟店名称"
+          placeholder="请输入门店名称"
           clearable
           @keyup.enter.native="handleQuery"
         />
@@ -117,8 +117,8 @@
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="联盟店ID" align="center" prop="storeId" />
-      <el-table-column label="联盟店名称" align="center" prop="storeName" />
+      <el-table-column label="门店ID" align="center" prop="storeId" />
+      <el-table-column label="门店名称" align="center" prop="storeName" />
       <el-table-column label="店长名称" align="center" prop="bossName" />
       <el-table-column label="店长手机号" align="center" prop="bossPhone" />
       <el-table-column
@@ -177,11 +177,11 @@
       @pagination="getList"
     />
 
-    <!-- 添加或修改联盟店主对话框 -->
+    <!-- 添加或修改门店主对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="120px">
-        <el-form-item label="联盟店名称" prop="storeName">
-          <el-input v-model="form.storeName" placeholder="请输入联盟店名称" />
+        <el-form-item label="门店名称" prop="storeName">
+          <el-input v-model="form.storeName" placeholder="请输入门店名称" />
         </el-form-item>
         <el-form-item label="店长名称" prop="bossName">
           <el-input v-model="form.bossName" placeholder="请输入店长名称" />
@@ -226,7 +226,7 @@
       append-to-body
     >
       <el-form label-width="120px">
-        <el-form-item label="联盟店名称">
+        <el-form-item label="门店名称">
           <el-input :value="selectStore.storeName" disabled />
         </el-form-item>
         <el-form-item label="店长名称">
@@ -287,7 +287,7 @@ export default {
       showSearch: true,
       // 总条数
       total: 0,
-      // 联盟店主表格数据
+      // 门店主表格数据
       storeList: [],
       // 弹出层标题
       title: "",
@@ -326,7 +326,7 @@ export default {
     this.getList();
   },
   methods: {
-    /** 查询联盟店主列表 */
+    /** 查询门店主列表 */
     getList() {
       this.loading = true;
       listStore(this.queryParams).then((response) => {
@@ -379,7 +379,7 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加联盟店主";
+      this.title = "添加门店";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -388,7 +388,7 @@ export default {
       getStore(storeId).then((response) => {
         this.form = response.data;
         this.open = true;
-        this.title = "修改联盟店主";
+        this.title = "修改门店";
       });
     },
     /** 提交按钮 */
@@ -457,7 +457,7 @@ export default {
     handleDelete(row) {
       const storeIds = row.storeId || this.ids;
       this.$modal
-        .confirm('是否确认删除联盟店主编号为"' + storeIds + '"的数据项？')
+        .confirm('是否确认删除门店主编号为"' + storeIds + '"的数据项？')
         .then(function () {
           return delStore(storeIds);
         })

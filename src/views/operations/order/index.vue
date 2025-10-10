@@ -112,7 +112,7 @@
           size="mini"
           :disabled="multiple"
           @click="handleVerify"
-          v-hasPermi="['card:order:verify']"
+          v-hasPermi="['operations:order:verify']"
           >核销</el-button
         >
       </el-col>
@@ -123,7 +123,7 @@
           icon="el-icon-download"
           size="mini"
           @click="handleExport"
-          v-hasPermi="['card:order:export']"
+          v-hasPermi="['operations:order:export']"
           >导出</el-button
         >
       </el-col>
@@ -232,7 +232,7 @@
             size="mini"
             type="text"
             @click="handleDelete(scope.row)"
-            v-hasPermi="['card:order:remove']"
+            v-hasPermi="['operations:order:remove']"
             >删除</el-button
           >
         </template> -->
@@ -243,7 +243,7 @@
                 icon="el-icon-circle-check"
                 v-if="scope.row.orderStatus == '1'"
                 @click="handleVerify(scope.row)"
-                v-hasPermi="['card:order:verify']"
+                v-hasPermi="['operations:order:verify']"
                 >核销</el-button
               >
             </template>

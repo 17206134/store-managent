@@ -101,7 +101,7 @@
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="流量卡ID" align="center" prop="cardId" />
+      <!-- <el-table-column label="流量卡ID" align="center" prop="cardId" /> -->
       <el-table-column label="流量卡编码" align="center" prop="cardCode" />
       <el-table-column label="流量卡名称" align="center" prop="cardName" />
       <el-table-column label="流量卡单价" align="center" prop="cardPrice" />
@@ -110,7 +110,7 @@
         align="center"
         prop="rewardAmount"
       />
-      <el-table-column label="状态" align="center" prop="status" />
+      <!-- <el-table-column label="状态" align="center" prop="status" /> -->
       <el-table-column label="备注" align="center" prop="remark" />
       <el-table-column
         label="操作"
