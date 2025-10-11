@@ -137,7 +137,7 @@
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['main:card:edit']"
-            >修改</el-button
+            >编辑</el-button
           >
           <el-button
             size="mini"

@@ -69,7 +69,7 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
-          v-hasPermi="['system:branch:add']"
+          v-hasPermi="['main:company:add']"
           >新增</el-button
         >
       </el-col>
@@ -81,7 +81,7 @@
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['system:branch:remove']"
+          v-hasPermi="['main:company:remove']"
           >删除</el-button
         >
       </el-col>
@@ -92,7 +92,7 @@
           icon="el-icon-download"
           size="mini"
           @click="handleExport"
-          v-hasPermi="['system:branch:export']"
+          v-hasPermi="['main:company:export']"
           >导出</el-button
         >
       </el-col>
@@ -125,15 +125,15 @@
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:branch:edit']"
-            >修改</el-button
+            v-hasPermi="['main:company:edit']"
+            >编辑</el-button
           >
           <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
-            v-hasPermi="['system:branch:remove']"
+            v-hasPermi="['main:company:remove']"
             >删除</el-button
           >
         </template>

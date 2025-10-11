@@ -144,13 +144,21 @@
       <el-table-column label="门店名称" align="center" prop="storeName" />
       <el-table-column label="店长名称" align="center" prop="bossName" />
       <el-table-column label="店长手机号" align="center" prop="bossPhone" />
-      <el-table-column
-        label="咨询顾问姓名"
-        align="center"
-        prop="consultantName"
-      />
-      <el-table-column label="所属大区" align="center" prop="regionName" />
-      <el-table-column label="分公司名称" align="center" prop="branchCompany" />
+      <el-table-column label="咨询顾问姓名" align="center">
+        <template slot-scope="scope">
+          <div>{{ scope.row.consultantInfo.consultantName }}</div>
+        </template>
+      </el-table-column>
+      <el-table-column label="所属大区" align="center">
+        <template slot-scope="scope">
+          <div>{{ scope.row.regionInfo.regionName }}</div>
+        </template>
+      </el-table-column>
+      <el-table-column label="分公司名称" align="center">
+        <template slot-scope="scope">
+          <div>{{ scope.row.branchInfo.branchName }}</div>
+        </template>
+      </el-table-column>
       <el-table-column label="已绑定的卡" align="left" prop="flowCardList">
         <template slot-scope="scope">
           <div>{{ scope.row.flowCardList | dealListByCard }}</div>
@@ -177,7 +185,7 @@
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['main:store:edit']"
-            >修改</el-button
+            >编辑</el-button
           >
           <el-button
             size="mini"

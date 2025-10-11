@@ -101,7 +101,7 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
-          v-hasPermi="['system:consultant:add']"
+          v-hasPermi="['main:consultant:add']"
           >新增</el-button
         >
       </el-col>
@@ -113,7 +113,7 @@
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['system:consultant:remove']"
+          v-hasPermi="['main:consultant:remove']"
           >删除</el-button
         >
       </el-col>
@@ -124,7 +124,7 @@
           icon="el-icon-download"
           size="mini"
           @click="handleExport"
-          v-hasPermi="['system:consultant:export']"
+          v-hasPermi="['main:consultant:export']"
           >导出</el-button
         >
       </el-col>
@@ -169,15 +169,15 @@
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:consultant:edit']"
-            >修改</el-button
+            v-hasPermi="['main:consultant:edit']"
+            >编辑</el-button
           >
           <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
-            v-hasPermi="['system:consultant:remove']"
+            v-hasPermi="['main:consultant:remove']"
             >删除</el-button
           >
         </template>
