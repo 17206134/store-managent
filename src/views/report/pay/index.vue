@@ -220,9 +220,21 @@
         prop="orderNo"
         width="140"
       />
-      <el-table-column label="联盟店" align="center" prop="storeName" />
-      <el-table-column label="流量卡" align="center" prop="cardName" />
-      <el-table-column label="销售员" align="center" prop="salesmanName" />
+      <el-table-column label="联盟店" align="center">
+        <span slot-scope="scope" v-if="scope.row.allianceStore">
+          {{ scope.row.allianceStore.storeName }}
+        </span>
+      </el-table-column>
+      <el-table-column label="流量卡" align="center" prop="flowCard">
+        <span slot-scope="scope" v-if="scope.row.flowCard">
+          {{ scope.row.flowCard.cardName }}
+        </span>
+      </el-table-column>
+      <el-table-column label="销售员" align="center">
+        <span slot-scope="scope" v-if="scope.row.salesmanInfo">
+          {{ scope.row.salesmanInfo.nickname }}
+        </span>
+      </el-table-column>
       <el-table-column label="客户姓名" align="center" prop="customerName" />
       <el-table-column
         label="客户手机号"
