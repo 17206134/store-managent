@@ -141,7 +141,7 @@
             <van-field
               readonly
               disabled
-              :value="selectStore.consultantName"
+              :value="selectStore.consultantInfo.consultantName"
               name="归属咨询顾问"
               label="归属咨询顾问"
               class="info-field"
@@ -149,7 +149,7 @@
             <van-field
               readonly
               disabled
-              :value="selectStore.branchCompany"
+              :value="selectStore.branchInfo.branchName"
               name="归属分公司"
               label="归属分公司"
               class="info-field"
@@ -255,7 +255,12 @@ export default {
       showQrCode: false, // 二维码弹窗
       showNamePicker: false, // 门店选择picker组件
       showCardPicker: false, // 流量卡选择picker组件
-      selectStore: {}, // 选中的门店的数据
+      selectStore: {
+        bossName: "",
+        bossPhone: "",
+        consultantInfo: {},
+        branchInfo: {},
+      }, // 选中的门店的数据
       selectCard: {}, // 选中的流量卡的数据
       storeColumns: [], // 门店数据
       storeCardColumns: [], // 门店的流量卡

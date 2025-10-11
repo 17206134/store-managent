@@ -8,14 +8,14 @@
       v-show="showSearch"
       label-width="68px"
     >
-      <el-form-item label="顾问编码" prop="consultantCode">
+      <!-- <el-form-item label="顾问编码" prop="consultantCode">
         <el-input
           v-model="queryParams.consultantCode"
           placeholder="请输入顾问编码"
           clearable
           @keyup.enter.native="handleQuery"
         />
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="顾问姓名" prop="consultantName">
         <el-input
           v-model="queryParams.consultantName"
@@ -79,7 +79,7 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item> -->
-      <el-form-item>
+      <el-form-item style="float: right">
         <el-button
           type="primary"
           icon="el-icon-search"
@@ -217,12 +217,16 @@
           <el-input v-model="form.email" placeholder="请输入邮箱" />
         </el-form-item>
         <el-form-item label="性别" prop="gender">
-          <el-select v-model="form.gender" placeholder="请选择性别">
+          <el-select
+            style="width: 100%"
+            v-model="form.gender"
+            placeholder="请选择性别"
+          >
             <el-option
               v-for="dict in dict.type.sys_user_sex"
-              :key="dict.dictValue"
-              :label="dict.dictLabel"
-              :value="dict.dictValue"
+              :key="dict.value"
+              :label="dict.label"
+              :value="dict.value"
             />
           </el-select>
         </el-form-item>
@@ -285,7 +289,7 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        consultantCode: null,
+        // consultantCode: null,
         consultantName: null,
         phone: null,
         userAccount: null,
@@ -338,11 +342,6 @@ export default {
         gender: null,
         // idCard: null,
         // sortOrder: null,
-        status: null,
-        createBy: null,
-        createTime: null,
-        updateBy: null,
-        updateTime: null,
         remark: null,
       };
       this.resetForm("form");

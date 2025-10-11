@@ -145,7 +145,13 @@
           @selection-change="handleSelectionChange"
         >
           <el-table-column type="selection" width="55" align="center" />
-          <el-table-column label="订单ID" align="center" prop="orderId" />
+          <el-table-column label="订单ID" align="center" prop="orderId">
+            <template slot-scope="scope">
+              <el-button type="text" @click="handleDetail(scope.row.orderId)">{{
+                scope.row.orderId
+              }}</el-button>
+            </template>
+          </el-table-column>
           <el-table-column
             label="订单号"
             width="120"
@@ -365,7 +371,13 @@ export default {
       this.single = selection.length !== 1;
       this.multiple = !selection.length;
     },
-    /** 删除按钮操作 */
+    /** 查看详情 */
+    handleDetail(id) {
+      this.$router.push({
+        path: `/operations/order-detail/detail/${id}`,
+      });
+    },
+    /** 核销按钮操作 */
     handleVerify(row) {
       const isNotVerify = this.selectionList.some(
         (item) => item.orderStatus !== "1"

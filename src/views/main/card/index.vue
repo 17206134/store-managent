@@ -32,7 +32,7 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="卖卡人奖励金" prop="sellerRewardAmount">
+      <!-- <el-form-item label="卖卡人奖励金" prop="sellerRewardAmount">
         <el-input
           v-model="queryParams.sellerRewardAmount"
           placeholder="请输入卖卡人奖励金"
@@ -47,7 +47,7 @@
           clearable
           @keyup.enter.native="handleQuery"
         />
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item style="float: right">
         <el-button
           type="primary"
@@ -237,9 +237,9 @@ export default {
         cardCode: null,
         cardName: null,
         cardPrice: null,
-        sellerRewardAmount: null,
-        storeRewardAmount: null,
-        status: null,
+        // sellerRewardAmount: null,
+        // storeRewardAmount: null,
+        // status: null,
       },
       // 表单参数
       form: {},
@@ -274,11 +274,7 @@ export default {
         cardPrice: null,
         sellerRewardAmount: null,
         storeRewardAmount: null,
-        status: null,
-        createBy: null,
-        createTime: null,
-        updateBy: null,
-        updateTime: null,
+        // status: null,
         remark: null,
       };
       this.resetForm("form");

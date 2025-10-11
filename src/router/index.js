@@ -119,6 +119,34 @@ export const dynamicRoutes = [
     ],
   },
   {
+    path: "/operations/order-detail",
+    component: Layout,
+    hidden: true,
+    permissions: ["operations:order:list"],
+    children: [
+      {
+        path: "detail/:orderId(\\d+)",
+        component: () => import("@/views/operations/order/detail"),
+        name: "OrderDetail",
+        meta: { title: "订单详情", activeMenu: "/operations/order" },
+      },
+    ],
+  },
+  {
+    path: "/report/pay-detail",
+    component: Layout,
+    hidden: true,
+    permissions: ["report:pay:list"],
+    children: [
+      {
+        path: "detail/:recordNo",
+        component: () => import("@/views/report/pay/detail"),
+        name: "PayDetail",
+        meta: { title: "支付流水详情", activeMenu: "/report/pay" },
+      },
+    ],
+  },
+  {
     path: "/system/role-auth",
     component: Layout,
     hidden: true,
