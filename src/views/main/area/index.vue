@@ -8,38 +8,30 @@
       v-show="showSearch"
       label-width="120px"
     >
-      <el-form-item label="流量卡编码" prop="cardCode">
+      <el-form-item label="大区编码" prop="regionCode">
         <el-input
-          v-model="queryParams.cardCode"
-          placeholder="请输入流量卡编码"
+          v-model="queryParams.regionCode"
+          placeholder="请输入大区编码"
           clearable
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="流量卡名称" prop="cardName">
+      <el-form-item label="大区名称" prop="regionName">
         <el-input
-          v-model="queryParams.cardName"
-          placeholder="请输入流量卡名称"
+          v-model="queryParams.regionName"
+          placeholder="请输入大区名称"
           clearable
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="流量卡单价" prop="cardPrice">
+      <!-- <el-form-item label="显示顺序" prop="sortOrder">
         <el-input
-          v-model="queryParams.cardPrice"
-          placeholder="请输入流量卡单价"
+          v-model="queryParams.sortOrder"
+          placeholder="请输入显示顺序"
           clearable
           @keyup.enter.native="handleQuery"
         />
-      </el-form-item>
-      <el-form-item label="流量卡奖励金" prop="rewardAmount">
-        <el-input
-          v-model="queryParams.rewardAmount"
-          placeholder="请输入流量卡奖励金"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item style="float: right">
         <el-button
           type="primary"
@@ -62,7 +54,7 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
-          v-hasPermi="['card:card:add']"
+          v-hasPermi="['system:region:add']"
           >新增</el-button
         >
       </el-col>
@@ -74,7 +66,7 @@
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['card:card:remove']"
+          v-hasPermi="['system:region:remove']"
           >删除</el-button
         >
       </el-col>
@@ -85,7 +77,7 @@
           icon="el-icon-download"
           size="mini"
           @click="handleExport"
-          v-hasPermi="['card:card:export']"
+          v-hasPermi="['system:region:export']"
           >导出</el-button
         >
       </el-col>
@@ -97,20 +89,13 @@
 
     <el-table
       v-loading="loading"
-      :data="cardList"
+      :data="regionList"
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" width="55" align="center" />
-      <!-- <el-table-column label="流量卡ID" align="center" prop="cardId" /> -->
-      <el-table-column label="流量卡编码" align="center" prop="cardCode" />
-      <el-table-column label="流量卡名称" align="center" prop="cardName" />
-      <el-table-column label="流量卡单价" align="center" prop="cardPrice" />
-      <el-table-column
-        label="流量卡奖励金"
-        align="center"
-        prop="rewardAmount"
-      />
-      <!-- <el-table-column label="状态" align="center" prop="status" /> -->
+      <el-table-column label="大区编码" align="center" prop="regionCode" />
+      <el-table-column label="大区名称" align="center" prop="regionName" />
+      <!-- <el-table-column label="显示顺序" align="center" prop="sortOrder" /> -->
       <el-table-column label="备注" align="center" prop="remark" />
       <el-table-column
         label="操作"
@@ -123,7 +108,7 @@
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
-            v-hasPermi="['card:card:edit']"
+            v-hasPermi="['system:region:edit']"
             >修改</el-button
           >
           <el-button
@@ -131,7 +116,7 @@
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
-            v-hasPermi="['card:card:remove']"
+            v-hasPermi="['system:region:remove']"
             >删除</el-button
           >
         </template>
@@ -146,24 +131,18 @@
       @pagination="getList"
     />
 
-    <!-- 添加或修改流量卡主对话框 -->
+    <!-- 添加或修改大区主数据对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="120px">
-        <el-form-item label="流量卡编码" prop="cardCode">
-          <el-input v-model="form.cardCode" placeholder="请输入流量卡编码" />
+        <el-form-item label="大区编码" prop="regionCode">
+          <el-input v-model="form.regionCode" placeholder="请输入大区编码" />
         </el-form-item>
-        <el-form-item label="流量卡名称" prop="cardName">
-          <el-input v-model="form.cardName" placeholder="请输入流量卡名称" />
+        <el-form-item label="大区名称" prop="regionName">
+          <el-input v-model="form.regionName" placeholder="请输入大区名称" />
         </el-form-item>
-        <el-form-item label="流量卡单价" prop="cardPrice">
-          <el-input v-model="form.cardPrice" placeholder="请输入流量卡单价" />
-        </el-form-item>
-        <el-form-item label="流量卡奖励金" prop="rewardAmount">
-          <el-input
-            v-model="form.rewardAmount"
-            placeholder="请输入流量卡奖励金"
-          />
-        </el-form-item>
+        <!-- <el-form-item label="显示顺序" prop="sortOrder">
+          <el-input v-model="form.sortOrder" placeholder="请输入显示顺序" />
+        </el-form-item> -->
         <el-form-item label="备注" prop="remark">
           <el-input
             v-model="form.remark"
@@ -182,15 +161,15 @@
 
 <script>
 import {
-  listCard,
-  getCard,
-  delCard,
-  addCard,
-  updateCard,
-} from "@/api/system/card";
+  listRegion,
+  getRegion,
+  delRegion,
+  addRegion,
+  updateRegion,
+} from "@/api/system/region";
 
 export default {
-  name: "Card",
+  name: "Region",
   data() {
     return {
       // 遮罩层
@@ -205,8 +184,8 @@ export default {
       showSearch: true,
       // 总条数
       total: 0,
-      // 流量卡主表格数据
-      cardList: [],
+      // 大区主数据表格数据
+      regionList: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -215,27 +194,33 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        cardCode: null,
-        cardName: null,
-        cardPrice: null,
-        rewardAmount: null,
+        regionCode: null,
+        regionName: null,
+        // sortOrder: null,
         status: null,
       },
       // 表单参数
       form: {},
       // 表单校验
-      rules: {},
+      rules: {
+        regionCode: [
+          { required: true, message: "大区编码不能为空", trigger: "blur" },
+        ],
+        regionName: [
+          { required: true, message: "大区名称不能为空", trigger: "blur" },
+        ],
+      },
     };
   },
   created() {
     this.getList();
   },
   methods: {
-    /** 查询流量卡主列表 */
+    /** 查询大区主数据列表 */
     getList() {
       this.loading = true;
-      listCard(this.queryParams).then((response) => {
-        this.cardList = response.rows;
+      listRegion(this.queryParams).then((response) => {
+        this.regionList = response.rows;
         this.total = response.total;
         this.loading = false;
       });
@@ -248,11 +233,10 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        cardId: null,
-        cardCode: null,
-        cardName: null,
-        cardPrice: null,
-        rewardAmount: null,
+        regionId: null,
+        regionCode: null,
+        regionName: null,
+        // sortOrder: null,
         status: null,
         createBy: null,
         createTime: null,
@@ -274,7 +258,7 @@ export default {
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
-      this.ids = selection.map((item) => item.cardId);
+      this.ids = selection.map((item) => item.regionId);
       this.single = selection.length !== 1;
       this.multiple = !selection.length;
     },
@@ -282,30 +266,30 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加流量卡主数据";
+      this.title = "添加大区主数据";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset();
-      const cardId = row.cardId || this.ids;
-      getCard(cardId).then((response) => {
+      const regionId = row.regionId || this.ids;
+      getRegion(regionId).then((response) => {
         this.form = response.data;
         this.open = true;
-        this.title = "修改流量卡主数据";
+        this.title = "修改大区主数据";
       });
     },
     /** 提交按钮 */
     submitForm() {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          if (this.form.cardId != null) {
-            updateCard(this.form).then((response) => {
+          if (this.form.regionId != null) {
+            updateRegion(this.form).then((response) => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
             });
           } else {
-            addCard(this.form).then((response) => {
+            addRegion(this.form).then((response) => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
@@ -316,11 +300,11 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const cardIds = row.cardId || this.ids;
+      const regionIds = row.regionId || this.ids;
       this.$modal
-        .confirm('是否确认删除流量卡主编号为"' + cardIds + '"的数据项？')
+        .confirm('是否确认删除大区主数据编号为"' + regionIds + '"的数据项？')
         .then(function () {
-          return delCard(cardIds);
+          return delRegion(regionIds);
         })
         .then(() => {
           this.getList();
@@ -331,11 +315,11 @@ export default {
     /** 导出按钮操作 */
     handleExport() {
       this.download(
-        "business/card/export",
+        "business/region/export",
         {
           ...this.queryParams,
         },
-        `card_${new Date().getTime()}.xlsx`
+        `region_${new Date().getTime()}.xlsx`
       );
     },
   },

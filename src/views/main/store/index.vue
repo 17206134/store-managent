@@ -32,29 +32,52 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="咨询顾问姓名" prop="consultantName">
-        <el-input
-          v-model="queryParams.consultantName"
-          placeholder="请输入咨询顾问姓名"
+      <el-form-item label="咨询顾问" prop="consultantCode">
+        <el-select
+          v-model="queryParams.consultantCode"
+          placeholder="请选择咨询顾问"
           clearable
           @keyup.enter.native="handleQuery"
-        />
+        >
+          <el-option
+            v-for="consultant in consultantList"
+            :key="consultant.consultantId"
+            :label="consultant.consultantName"
+            :value="consultant.consultantCode"
+          />
+        </el-select>
       </el-form-item>
-      <el-form-item label="分公司名称" prop="branchCompany">
-        <el-input
-          v-model="queryParams.branchCompany"
-          placeholder="请输入分公司名称"
+      <el-form-item label="所属大区" prop="regionCode">
+        <el-select
+          v-model="queryParams.regionCode"
+          placeholder="请选择所属大区"
           clearable
+          @change="handleRegionChange"
           @keyup.enter.native="handleQuery"
-        />
+        >
+          <el-option
+            v-for="region in regionList"
+            :key="region.regionId"
+            :label="region.regionName"
+            :value="region.regionCode"
+          />
+        </el-select>
       </el-form-item>
-      <el-form-item label="所属大区" prop="regionName">
-        <el-input
-          v-model="queryParams.regionName"
-          placeholder="请输入所属大区"
+      <el-form-item label="分公司名称" prop="branchCode">
+        <el-select
+          v-model="queryParams.branchCode"
+          placeholder="请选择分公司名称"
           clearable
+          :disabled="!queryParams.regionCode"
           @keyup.enter.native="handleQuery"
-        />
+        >
+          <el-option
+            v-for="branch in filteredBranchList"
+            :key="branch.branchId"
+            :label="branch.branchName"
+            :value="branch.branchCode"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item style="float: right">
         <el-button
@@ -78,7 +101,7 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
-          v-hasPermi="['card:store:add']"
+          v-hasPermi="['main:store:add']"
           >新增</el-button
         >
       </el-col>
@@ -90,7 +113,7 @@
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['card:store:remove']"
+          v-hasPermi="['main:store:remove']"
           >删除</el-button
         >
       </el-col>
@@ -101,7 +124,7 @@
           icon="el-icon-download"
           size="mini"
           @click="handleExport"
-          v-hasPermi="['card:store:export']"
+          v-hasPermi="['main:store:export']"
           >导出</el-button
         >
       </el-col>
@@ -126,14 +149,13 @@
         align="center"
         prop="consultantName"
       />
+      <el-table-column label="所属大区" align="center" prop="regionName" />
       <el-table-column label="分公司名称" align="center" prop="branchCompany" />
       <el-table-column label="已绑定的卡" align="left" prop="flowCardList">
         <template slot-scope="scope">
           <div>{{ scope.row.flowCardList | dealListByCard }}</div>
         </template>
       </el-table-column>
-
-      <el-table-column label="所属大区" align="center" prop="regionName" />
       <el-table-column label="备注" align="center" prop="remark" />
       <el-table-column
         label="操作"
@@ -146,7 +168,7 @@
             type="text"
             icon="el-icon-paperclip"
             @click="bindCard(scope.row)"
-            v-hasPermi="['card:store:bind']"
+            v-hasPermi="['main:store:bind']"
             >绑卡</el-button
           >
           <el-button
@@ -154,7 +176,7 @@
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
-            v-hasPermi="['card:store:edit']"
+            v-hasPermi="['main:store:edit']"
             >修改</el-button
           >
           <el-button
@@ -162,7 +184,7 @@
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
-            v-hasPermi="['card:store:remove']"
+            v-hasPermi="['main:store:remove']"
             >删除</el-button
           >
         </template>
@@ -189,21 +211,49 @@
         <el-form-item label="店长手机号" prop="bossPhone">
           <el-input v-model="form.bossPhone" placeholder="请输入店长手机号" />
         </el-form-item>
-        <el-form-item label="咨询顾问姓名" prop="consultantName">
-          <el-input
-            v-model="form.consultantName"
-            placeholder="请输入咨询顾问姓名"
-          />
+        <el-form-item label="咨询顾问" prop="consultantCode">
+          <el-select
+            v-model="form.consultantCode"
+            placeholder="请选择咨询顾问"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="consultant in consultantList"
+              :key="consultant.consultantId"
+              :label="consultant.consultantName"
+              :value="consultant.consultantCode"
+            />
+          </el-select>
         </el-form-item>
-        <el-form-item label="分公司名称" prop="branchCompany">
-          <el-input
-            v-model="form.branchCompany"
-            placeholder="请输入分公司名称"
-          />
+        <el-form-item label="所属大区" prop="regionCode">
+          <el-select
+            v-model="form.regionCode"
+            placeholder="请选择所属大区"
+            style="width: 100%"
+            @change="handleFormRegionChange"
+          >
+            <el-option
+              v-for="region in regionList"
+              :key="region.regionId"
+              :label="region.regionName"
+              :value="region.regionCode"
+            />
+          </el-select>
         </el-form-item>
-
-        <el-form-item label="所属大区" prop="regionName">
-          <el-input v-model="form.regionName" placeholder="请输入所属大区" />
+        <el-form-item label="分公司名称" prop="branchCode">
+          <el-select
+            v-model="form.branchCode"
+            placeholder="请选择分公司名称"
+            style="width: 100%"
+            :disabled="!form.regionCode"
+          >
+            <el-option
+              v-for="branch in filteredFormBranchList"
+              :key="branch.branchId"
+              :label="branch.branchName"
+              :value="branch.branchCode"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input
@@ -270,6 +320,9 @@ import {
   updateCard,
   cardListWithBindStatusList,
 } from "@/api/system/store";
+import { listConsultant } from "@/api/system/consultant";
+import { listRegion } from "@/api/system/region";
+import { listBranch } from "@/api/system/branch";
 
 export default {
   name: "Store",
@@ -289,6 +342,12 @@ export default {
       total: 0,
       // 门店主表格数据
       storeList: [],
+      // 咨询顾问列表
+      consultantList: [],
+      // 大区列表
+      regionList: [],
+      // 分公司列表
+      branchList: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -302,10 +361,9 @@ export default {
         storeName: null,
         bossName: null,
         bossPhone: null,
-        consultantName: null,
-        branchCompany: null,
-        regionName: null,
-        status: null,
+        consultantCode: null,
+        branchCode: null,
+        regionCode: null,
       },
       // 表单参数
       form: {},
@@ -322,8 +380,31 @@ export default {
       return list.map((item) => item.cardName).join("、");
     },
   },
+  computed: {
+    // 根据选择的大区过滤分公司列表（搜索表单）
+    filteredBranchList() {
+      if (!this.queryParams.regionCode) {
+        return [];
+      }
+      return this.branchList.filter(
+        (branch) => branch.regionCode === this.queryParams.regionCode
+      );
+    },
+    // 根据选择的大区过滤分公司列表（编辑表单）
+    filteredFormBranchList() {
+      if (!this.form.regionCode) {
+        return [];
+      }
+      return this.branchList.filter(
+        (branch) => branch.regionCode === this.form.regionCode
+      );
+    },
+  },
   created() {
     this.getList();
+    this.getConsultantList();
+    this.getRegionList();
+    this.getBranchList();
   },
   methods: {
     /** 查询门店主列表 */
@@ -335,6 +416,34 @@ export default {
         this.loading = false;
       });
     },
+    /** 获取咨询顾问列表 */
+    getConsultantList() {
+      listConsultant({ pageNum: 1, pageSize: 999 }).then((response) => {
+        this.consultantList = response.rows || [];
+      });
+    },
+    /** 获取大区列表 */
+    getRegionList() {
+      listRegion({ pageNum: 1, pageSize: 999 }).then((response) => {
+        this.regionList = response.rows || [];
+      });
+    },
+    /** 获取分公司列表 */
+    getBranchList() {
+      listBranch({ pageNum: 1, pageSize: 999 }).then((response) => {
+        this.branchList = response.rows || [];
+      });
+    },
+    /** 搜索表单大区选择变化处理 */
+    handleRegionChange(regionCode) {
+      // 清空分公司选择
+      this.queryParams.branchCode = null;
+    },
+    /** 编辑表单大区选择变化处理 */
+    handleFormRegionChange(regionCode) {
+      // 清空分公司选择
+      this.form.branchCode = null;
+    },
     // 取消按钮
     cancel() {
       this.open = false;
@@ -343,18 +452,12 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        storeId: null,
         storeName: null,
         bossName: null,
         bossPhone: null,
-        consultantName: null,
-        branchCompany: null,
-        regionName: null,
-        status: null,
-        createBy: null,
-        createTime: null,
-        updateBy: null,
-        updateTime: null,
+        consultantCode: null,
+        branchCode: null,
+        regionCode: null,
         remark: null,
       };
       this.resetForm("form");
@@ -386,7 +489,24 @@ export default {
       this.reset();
       const storeId = row.storeId || this.ids;
       getStore(storeId).then((response) => {
-        this.form = response.data;
+        const {
+          storeName,
+          bossName,
+          bossPhone,
+          consultantCode,
+          branchCode,
+          regionCode,
+          remark,
+        } = response.data;
+        this.form = {
+          storeName,
+          bossName,
+          bossPhone,
+          consultantCode,
+          branchCode,
+          regionCode,
+          remark,
+        };
         this.open = true;
         this.title = "修改门店";
       });
