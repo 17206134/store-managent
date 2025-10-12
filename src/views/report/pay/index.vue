@@ -188,7 +188,7 @@
           icon="el-icon-download"
           size="mini"
           @click="handleExport"
-          v-hasPermi="['system:record:export']"
+          v-hasPermi="['report:pay:export']"
           >导出</el-button
         >
       </el-col>
@@ -232,7 +232,7 @@
       </el-table-column>
       <el-table-column label="销售员" align="center">
         <span slot-scope="scope" v-if="scope.row.salesmanInfo">
-          {{ scope.row.salesmanInfo.nickname }}
+          {{ scope.row.salesmanInfo.nickName }}
         </span>
       </el-table-column>
       <el-table-column label="客户姓名" align="center" prop="customerName" />
