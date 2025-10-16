@@ -3,7 +3,7 @@ import request from "@/utils/request";
 // 查询订单核销记录列表
 export function listRecord(query) {
   return request({
-    url: "/business/record/list",
+    url: "/business/verifyRecord/list",
     method: "get",
     params: query,
   });
@@ -12,33 +12,15 @@ export function listRecord(query) {
 // 查询订单核销记录详细
 export function getRecord(recordId) {
   return request({
-    url: "/business/record/" + recordId,
+    url: "/business/verifyRecord/" + recordId,
     method: "get",
-  });
-}
-
-// 新增订单核销记录
-export function addRecord(data) {
-  return request({
-    url: "/business/record",
-    method: "post",
-    data: data,
-  });
-}
-
-// 修改订单核销记录
-export function updateRecord(data) {
-  return request({
-    url: "/business/record",
-    method: "put",
-    data: data,
   });
 }
 
 // 删除订单核销记录
 export function delRecord(recordId) {
   return request({
-    url: "/business/record/" + recordId,
+    url: "/business/verifyRecord/" + recordId,
     method: "delete",
   });
 }

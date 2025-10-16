@@ -334,7 +334,7 @@ export default {
 
 <style lang="scss" scoped>
 .app-container {
-  min-height: 100vh;
+  min-height: calc(100vh - 84px);
   background-color: #f5f5f5;
   padding: 0;
 }
@@ -357,7 +357,6 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
-  padding-bottom: 16px;
   border-bottom: 1px solid #e8e8e8;
 
   .back-btn {

@@ -42,3 +42,12 @@ export function delCard(cardId) {
     method: "delete",
   });
 }
+
+// 设置流量卡奖励配置
+export function setCardRewardConfig(data) {
+  return request({
+    url: "/business/rewardConfig/setRewardConfig",
+    method: "post",
+    data: data,
+  });
+}

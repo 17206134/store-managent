@@ -6,7 +6,7 @@
       size="small"
       :inline="true"
       v-show="showSearch"
-      label-width="68px"
+      label-width="120px"
     >
       <el-form-item label="订单ID" prop="orderId">
         <el-input
@@ -24,10 +24,10 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="核销人ID" prop="verifyBy">
+      <el-form-item label="核销人" prop="verifierName">
         <el-input
-          v-model="queryParams.verifyBy"
-          placeholder="请输入核销人ID"
+          v-model="queryParams.verifierName"
+          placeholder="请输入核销人"
           clearable
           @keyup.enter.native="handleQuery"
         />
@@ -42,7 +42,7 @@
         >
         </el-date-picker>
       </el-form-item>
-      <el-form-item>
+      <el-form-item style="float: right">
         <el-button
           type="primary"
           icon="el-icon-search"
@@ -65,7 +65,7 @@
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['system:record:remove']"
+          v-hasPermi="['operations:verify:delete']"
           >删除</el-button
         >
       </el-col>
@@ -76,7 +76,7 @@
           icon="el-icon-download"
           size="mini"
           @click="handleExport"
-          v-hasPermi="['system:record:export']"
+          v-hasPermi="['operations:verify:export']"
           >导出</el-button
         >
       </el-col>
@@ -93,9 +93,19 @@
     >
       <el-table-column type="selection" width="55" align="center" />
       <!-- <el-table-column label="核销记录ID" align="center" prop="recordId" /> -->
-      <el-table-column label="订单ID" align="center" prop="orderId" />
+      <el-table-column label="订单ID" align="center" prop="orderId">
+        <template slot-scope="scope">
+          <el-button type="text" @click="handleDetail(scope.row.orderId)">{{
+            scope.row.orderId
+          }}</el-button>
+        </template>
+      </el-table-column>
       <el-table-column label="订单号" align="center" prop="orderNo" />
-      <el-table-column label="核销人ID" align="center" prop="verifyBy" />
+      <el-table-column label="核销人" align="center" prop="verifyUser">
+        <template slot-scope="scope" v-if="scope.row.verifyUser">
+          <span>{{ scope.row.verifyUser.nickName }}</span>
+        </template>
+      </el-table-column>
       <el-table-column
         label="核销时间"
         align="center"
@@ -166,7 +176,7 @@ export default {
         pageSize: 10,
         orderId: null,
         orderNo: null,
-        verifyBy: null,
+        verifierName: null,
         verifyTime: null,
         // verifyRemark: null,
         // verifyStatus: null,
@@ -186,6 +196,12 @@ export default {
         this.recordList = response.rows;
         this.total = response.total;
         this.loading = false;
+      });
+    },
+    /** 查看详情 */
+    handleDetail(id) {
+      this.$router.push({
+        path: `/operations/order-detail/detail/${id}`,
       });
     },
     /** 搜索按钮操作 */

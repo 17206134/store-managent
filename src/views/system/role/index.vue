@@ -51,7 +51,7 @@
           end-placeholder="结束日期"
         ></el-date-picker>
       </el-form-item>
-      <el-form-item>
+      <el-form-item style="float: right">
         <el-button
           type="primary"
           icon="el-icon-search"

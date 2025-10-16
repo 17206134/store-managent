@@ -24,30 +24,6 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="流量卡单价" prop="cardPrice">
-        <el-input
-          v-model="queryParams.cardPrice"
-          placeholder="请输入流量卡单价"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <!-- <el-form-item label="卖卡人奖励金" prop="sellerRewardAmount">
-        <el-input
-          v-model="queryParams.sellerRewardAmount"
-          placeholder="请输入卖卡人奖励金"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="联盟店奖励金" prop="storeRewardAmount">
-        <el-input
-          v-model="queryParams.storeRewardAmount"
-          placeholder="请输入联盟店奖励金"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item> -->
       <el-form-item style="float: right">
         <el-button
           type="primary"
@@ -113,16 +89,6 @@
       <el-table-column label="流量卡编码" align="center" prop="cardCode" />
       <el-table-column label="流量卡名称" align="center" prop="cardName" />
       <el-table-column label="流量卡单价" align="center" prop="cardPrice" />
-      <el-table-column
-        label="卖卡人奖励金"
-        align="center"
-        prop="sellerRewardAmount"
-      />
-      <el-table-column
-        label="联盟店奖励金"
-        align="center"
-        prop="storeRewardAmount"
-      />
       <!-- <el-table-column label="状态" align="center" prop="status" /> -->
       <el-table-column label="备注" align="center" prop="remark" />
       <el-table-column
@@ -138,6 +104,14 @@
             @click="handleUpdate(scope.row)"
             v-hasPermi="['main:card:edit']"
             >编辑</el-button
+          >
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-view"
+            @click="handleView(scope.row)"
+            v-hasPermi="['main:card:view']"
+            >查看</el-button
           >
           <el-button
             size="mini"
@@ -158,55 +132,11 @@
       :limit.sync="queryParams.pageSize"
       @pagination="getList"
     />
-
-    <!-- 添加或修改流量卡主对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="120px">
-        <el-form-item label="流量卡编码" prop="cardCode">
-          <el-input v-model="form.cardCode" placeholder="请输入流量卡编码" />
-        </el-form-item>
-        <el-form-item label="流量卡名称" prop="cardName">
-          <el-input v-model="form.cardName" placeholder="请输入流量卡名称" />
-        </el-form-item>
-        <el-form-item label="流量卡单价" prop="cardPrice">
-          <el-input v-model="form.cardPrice" placeholder="请输入流量卡单价" />
-        </el-form-item>
-        <el-form-item label="卖卡人奖励金" prop="sellerRewardAmount">
-          <el-input
-            v-model="form.sellerRewardAmount"
-            placeholder="请输入卖卡人奖励金"
-          />
-        </el-form-item>
-        <el-form-item label="联盟店奖励金" prop="storeRewardAmount">
-          <el-input
-            v-model="form.storeRewardAmount"
-            placeholder="请输入联盟店奖励金"
-          />
-        </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input
-            v-model="form.remark"
-            type="textarea"
-            placeholder="请输入内容"
-          />
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
 <script>
-import {
-  listCard,
-  getCard,
-  delCard,
-  addCard,
-  updateCard,
-} from "@/api/system/card";
+import { listCard, delCard } from "@/api/system/card";
 
 export default {
   name: "Card",
@@ -226,25 +156,15 @@ export default {
       total: 0,
       // 流量卡主表格数据
       cardList: [],
-      // 弹出层标题
-      title: "",
-      // 是否显示弹出层
-      open: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
         pageSize: 10,
         cardCode: null,
         cardName: null,
-        cardPrice: null,
-        // sellerRewardAmount: null,
-        // storeRewardAmount: null,
+        // cardPrice: null,
         // status: null,
       },
-      // 表单参数
-      form: {},
-      // 表单校验
-      rules: {},
     };
   },
   created() {
@@ -259,25 +179,6 @@ export default {
         this.total = response.total;
         this.loading = false;
       });
-    },
-    // 取消按钮
-    cancel() {
-      this.open = false;
-      this.reset();
-    },
-    // 表单重置
-    reset() {
-      this.form = {
-        cardId: null,
-        cardCode: null,
-        cardName: null,
-        cardPrice: null,
-        sellerRewardAmount: null,
-        storeRewardAmount: null,
-        // status: null,
-        remark: null,
-      };
-      this.resetForm("form");
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -297,39 +198,16 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd() {
-      this.reset();
-      this.open = true;
-      this.title = "添加流量卡主数据";
+      this.$router.push("/main/card-edit/add");
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
-      this.reset();
       const cardId = row.cardId || this.ids;
-      getCard(cardId).then((response) => {
-        this.form = response.data;
-        this.open = true;
-        this.title = "修改流量卡主数据";
-      });
+      this.$router.push(`/main/card-edit/index/${cardId}`);
     },
-    /** 提交按钮 */
-    submitForm() {
-      this.$refs["form"].validate((valid) => {
-        if (valid) {
-          if (this.form.cardId != null) {
-            updateCard(this.form).then((response) => {
-              this.$modal.msgSuccess("修改成功");
-              this.open = false;
-              this.getList();
-            });
-          } else {
-            addCard(this.form).then((response) => {
-              this.$modal.msgSuccess("新增成功");
-              this.open = false;
-              this.getList();
-            });
-          }
-        }
-      });
+    handleView(row) {
+      const cardId = row.cardId || this.ids;
+      this.$router.push(`/main/card-edit/view/${cardId}`);
     },
     /** 删除按钮操作 */
     handleDelete(row) {

@@ -42,7 +42,7 @@
               size="small"
               :inline="true"
               v-show="showSearch"
-              label-width="68px"
+              label-width="120px"
             >
               <el-form-item label="用户名称" prop="userName">
                 <el-input
@@ -77,6 +77,15 @@
                   />
                 </el-select>
               </el-form-item>
+              <el-form-item label="卖卡人名称" prop="sellerName">
+                <el-input
+                  v-model="queryParams.sellerName"
+                  placeholder="请输入卖卡人名称"
+                  clearable
+                  style="width: 240px"
+                  @keyup.enter.native="handleQuery"
+                />
+              </el-form-item>
               <el-form-item label="创建时间">
                 <el-date-picker
                   v-model="dateRange"
@@ -88,7 +97,7 @@
                   end-placeholder="结束日期"
                 ></el-date-picker>
               </el-form-item>
-              <el-form-item>
+              <el-form-item style="float: right">
                 <el-button
                   type="primary"
                   icon="el-icon-search"
@@ -208,12 +217,60 @@
                 :show-overflow-tooltip="true"
               />
               <el-table-column
+                label="卖卡人类型编码"
+                width="120"
+                align="left"
+                key="sellerCode"
+                v-if="columns.sellerCode.visible"
+                :show-overflow-tooltip="true"
+              >
+                <span slot-scope="scope" v-if="scope.row.sellerInfo">{{
+                  scope.row.sellerInfo.sellerCode
+                }}</span>
+              </el-table-column>
+              <el-table-column
+                label="卖卡人类型名称"
+                width="120"
+                align="center"
+                key="sellerName"
+                v-if="columns.sellerName.visible"
+                :show-overflow-tooltip="true"
+              >
+                <span slot-scope="scope" v-if="scope.row.sellerInfo">{{
+                  scope.row.sellerInfo.sellerName
+                }}</span>
+              </el-table-column>
+              <el-table-column
+                label="卖卡人父级编码"
+                width="120"
+                align="center"
+                key="parentCode"
+                v-if="columns.parentCode.visible"
+                :show-overflow-tooltip="true"
+              >
+                <span slot-scope="scope" v-if="scope.row.sellerInfo">{{
+                  scope.row.sellerInfo.parentCode
+                }}</span>
+              </el-table-column>
+              <el-table-column
+                label="卖卡人层级"
+                align="center"
+                key="sellerLevel"
+                v-if="columns.sellerLevel.visible"
+                :show-overflow-tooltip="true"
+              >
+                <span slot-scope="scope" v-if="scope.row.sellerInfo">
+                  {{ numberToChineseLevel(scope.row.sellerInfo.sellerLevel) }}
+                </span>
+              </el-table-column>
+              <el-table-column
                 label="手机号码"
                 align="center"
                 key="phonenumber"
                 prop="phonenumber"
                 v-if="columns.phonenumber.visible"
                 width="120"
+                :show-overflow-tooltip="true"
               />
               <el-table-column
                 label="状态"
@@ -307,8 +364,8 @@
     </el-row>
 
     <!-- 添加或修改用户配置对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+    <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body>
+      <el-form ref="form" :model="form" :rules="rules" label-width="120px">
         <el-row>
           <el-col :span="12">
             <el-form-item label="用户昵称" prop="nickName">
@@ -383,7 +440,11 @@
         <el-row>
           <el-col :span="12">
             <el-form-item label="用户性别">
-              <el-select v-model="form.sex" placeholder="请选择性别">
+              <el-select
+                style="width: 100%"
+                v-model="form.sex"
+                placeholder="请选择性别"
+              >
                 <el-option
                   v-for="dict in dict.type.sys_user_sex"
                   :key="dict.value"
@@ -412,6 +473,7 @@
               <el-select
                 v-model="form.postIds"
                 multiple
+                style="width: 100%"
                 placeholder="请选择岗位"
               >
                 <el-option
@@ -429,6 +491,7 @@
               <el-select
                 v-model="form.roleIds"
                 multiple
+                style="width: 100%"
                 placeholder="请选择角色"
               >
                 <el-option
@@ -439,6 +502,26 @@
                   :disabled="item.status == 1"
                 ></el-option>
               </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="卖卡人类型" prop="sellerCode">
+              <el-cascader
+                v-model="form.sellerCode"
+                :options="sellerCodeOptions"
+                :props="{
+                  value: 'sellerCode',
+                  label: 'sellerName',
+                  children: 'children',
+                  checkStrictly: true,
+                  emitPath: false,
+                }"
+                placeholder="请选择卖卡人类型"
+                clearable
+                style="width: 100%"
+              />
             </el-form-item>
           </el-col>
         </el-row>
@@ -516,11 +599,13 @@ import {
   changeUserStatus,
   deptTreeSelect,
 } from "@/api/system/user";
+import { getSellerTree } from "@/api/system/seller";
 import { getToken } from "@/utils/auth";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
+import { numberToChineseLevel } from "@/utils/num";
 
 export default {
   name: "User",
@@ -528,6 +613,7 @@ export default {
   components: { Treeselect, Splitpanes, Pane },
   data() {
     return {
+      numberToChineseLevel: numberToChineseLevel,
       // 遮罩层
       loading: true,
       // 选中数组
@@ -560,6 +646,8 @@ export default {
       postOptions: [],
       // 角色选项
       roleOptions: [],
+      // 卖卡人选项
+      sellerCodeOptions: [],
       // 表单参数
       form: {},
       defaultProps: {
@@ -589,6 +677,7 @@ export default {
         phonenumber: undefined,
         status: undefined,
         deptId: undefined,
+        sellerName: undefined,
       },
       // 列信息
       columns: {
@@ -596,6 +685,10 @@ export default {
         userName: { label: "用户名称", visible: true },
         nickName: { label: "用户昵称", visible: true },
         deptName: { label: "部门", visible: true },
+        sellerCode: { label: "卖卡人类型编码", visible: true },
+        sellerName: { label: "卖卡人类型名称", visible: true },
+        parentCode: { label: "卖卡人父级编码", visible: true },
+        sellerLevel: { label: "卖卡人层级", visible: true },
         phonenumber: { label: "手机号码", visible: true },
         status: { label: "状态", visible: true },
         createTime: { label: "创建时间", visible: true },
@@ -736,6 +829,7 @@ export default {
         remark: undefined,
         postIds: [],
         roleIds: [],
+        sellerCode: undefined,
       };
       this.resetForm("form");
     },
@@ -749,6 +843,7 @@ export default {
       this.dateRange = [];
       this.resetForm("queryForm");
       this.queryParams.deptId = undefined;
+      this.queryParams.sellerName = undefined;
       this.$refs.tree.setCurrentKey(null);
       this.handleQuery();
     },
@@ -780,6 +875,8 @@ export default {
         this.open = true;
         this.title = "添加用户";
         this.form.password = this.initPassword;
+        // 获取卖卡人树形数据
+        this.getSellerCodeOptions();
       });
     },
     /** 修改按钮操作 */
@@ -795,6 +892,8 @@ export default {
         this.open = true;
         this.title = "修改用户";
         this.form.password = "";
+        // 获取卖卡人树形数据
+        this.getSellerCodeOptions();
       });
     },
     /** 重置密码按钮操作 */
@@ -907,10 +1006,16 @@ export default {
         (!file[0].name.toLowerCase().endsWith(".xls") &&
           !file[0].name.toLowerCase().endsWith(".xlsx"))
       ) {
-        this.$modal.msgError("请选择后缀为 “xls”或“xlsx”的文件。");
+        this.$modal.msgError('请选择后缀为 "xls"或"xlsx"的文件。');
         return;
       }
       this.$refs.upload.submit();
+    },
+    /** 获取卖卡人树形数据 */
+    getSellerCodeOptions() {
+      getSellerTree().then((response) => {
+        this.sellerCodeOptions = response.data || [];
+      });
     },
   },
 };
