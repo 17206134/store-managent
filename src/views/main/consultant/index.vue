@@ -417,7 +417,7 @@ export default {
     /** 导出按钮操作 */
     handleExport() {
       this.download(
-        "system/consultant/export",
+        "business/consultant/export",
         {
           ...this.queryParams,
         },

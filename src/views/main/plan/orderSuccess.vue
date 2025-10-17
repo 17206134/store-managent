@@ -25,52 +25,69 @@
     <div class="order-details-card">
       <h2 class="details-title">订单信息</h2>
       <div class="info-row">
-        <span class="info-label">订单编号：</span>
-        <span class="info-value">{{ orderInfo.orderId }}</span>
+        <div class="info-label">订单编号：</div>
+        <div class="info-value">{{ orderInfo.orderId || "-" }}</div>
       </div>
       <div class="info-row">
         <div class="info-label">商品名称：</div>
-        <div class="info-value">{{ orderInfo.cardName }}</div>
+        <div class="info-value" v-if="orderInfo.flowCard">
+          {{ orderInfo.flowCard.cardName || "-" }}
+        </div>
       </div>
       <div class="info-row">
         <div class="info-label">支付时间：</div>
-        <div class="info-value">{{ orderInfo.createTime }}</div>
+        <div class="info-value">{{ orderInfo.payTime || "-" }}</div>
       </div>
-
       <div class="info-row">
         <div class="info-label">支付金额：</div>
-        <div class="info-value">¥{{ orderInfo.payAmount }}</div>
+        <div class="info-value">¥{{ orderInfo.orderAmount }}</div>
       </div>
 
       <div class="info-row">
         <div class="info-label">客户姓名：</div>
-        <div class="info-value">{{ orderInfo.customerName }}</div>
+        <div class="info-value">{{ orderInfo.customerName || "-" }}</div>
       </div>
 
       <div class="info-row">
         <div class="info-label">客户手机号：</div>
-        <div class="info-value">{{ orderInfo.customerPhone }}</div>
+        <div class="info-value">{{ orderInfo.customerPhone || "-" }}</div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { getOrder } from "@/api/system/order";
 export default {
   name: "VirtualProductPaymentSuccess",
   data() {
     return {
       // 虚拟商品订单信息
       orderInfo: {},
+      orderId: null,
     };
   },
   methods: {},
   created() {
-    const { info } = this.$route.query;
-    console.log(info, "鞋带过来的信息");
-    if (info) {
-      this.orderInfo = JSON.parse(info);
+    this.orderId = this.$route.params.orderId;
+    console.log(this.orderId, "鞋带过来的信息");
+    if (this.orderId) {
+      this.getOrderInfo();
     }
+  },
+  methods: {
+    getOrderInfo() {
+      getOrder(this.orderId)
+        .then((response) => {
+          this.orderInfo = response.data || {};
+          this.loading = false;
+        })
+        .catch(() => {
+          this.loading = false;
+          this.$modal.msgError("获取订单详情失败");
+          this.goBack();
+        });
+    },
   },
   mounted() {
     // 页面加载时添加动画类
@@ -201,11 +218,13 @@ $success-color: #4cd964;
       text-align: right;
       color: $text-secondary;
       font-size: 16px;
+      line-height: 21px;
     }
 
     .info-value {
       flex: 1;
       color: $text-color;
+      line-height: 21px;
       font-size: 14px;
       word-break: break-all;
     }

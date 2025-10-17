@@ -19,7 +19,8 @@
         </el-button>
         <el-button
           v-if="
-            orderDetail.orderStatus === '1' && orderDetail.verifyStatus !== '1'
+            orderDetail.orderStatus === ORDER_STATUS.PAID &&
+            orderDetail.verifyStatus !== VERIFY_STATUS.VERIFIED
           "
           plain
           type="warning"
@@ -214,11 +215,22 @@
 
 <script>
 import { getOrder, batchVerify } from "@/api/system/order";
+import {
+  ORDER_STATUS,
+  PAY_STATUS,
+  VERIFY_STATUS,
+  getOrderStatusTagType,
+  getPayStatusTagType,
+  getVerifyStatusTagType,
+} from "@/constants/order";
 
 export default {
   name: "OrderDetail",
   data() {
     return {
+      ORDER_STATUS: ORDER_STATUS,
+      VERIFY_STATUS: VERIFY_STATUS,
+      PAY_STATUS: PAY_STATUS,
       loading: true,
       orderDetail: {},
       orderId: null,
@@ -274,33 +286,17 @@ export default {
 
     /** 获取订单状态标签类型 */
     getOrderStatusType(status) {
-      const statusMap = {
-        0: "warning", // 待支付
-        1: "success", // 已支付
-        2: "info", // 已取消
-        3: "danger", // 已退款
-        4: "success", // 已完成
-      };
-      return statusMap[status] || "info";
+      return getOrderStatusTagType(status);
     },
 
     /** 获取支付状态标签类型 */
     getPayStatusType(status) {
-      const statusMap = {
-        0: "warning", // 未支付
-        1: "success", // 已支付
-        2: "danger", // 支付失败
-      };
-      return statusMap[status] || "info";
+      return getPayStatusTagType(status);
     },
 
     /** 获取核销状态标签类型 */
     getVerifyStatusType(status) {
-      const statusMap = {
-        0: "warning", // 未核销
-        1: "success", // 已核销
-      };
-      return statusMap[status] || "info";
+      return getVerifyStatusTagType(status);
     },
   },
 };

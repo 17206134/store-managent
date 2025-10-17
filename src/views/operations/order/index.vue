@@ -247,7 +247,7 @@
                 size="mini"
                 type="text"
                 icon="el-icon-circle-check"
-                v-if="scope.row.orderStatus == '1'"
+                v-if="scope.row.orderStatus == ORDER_STATUS.PAID"
                 @click="handleVerify(scope.row)"
                 v-hasPermi="['operations:order:verify']"
                 >核销</el-button
@@ -270,12 +270,14 @@
 
 <script>
 import { listOrder, batchVerify } from "@/api/system/order";
+import { ORDER_STATUS, getOrderStatusList } from "@/constants/order";
 
 export default {
   name: "Order",
   data() {
     return {
       // 遮罩层
+      ORDER_STATUS: ORDER_STATUS,
       loading: true,
       // 选中数组
       selectionList: [],
@@ -310,33 +312,8 @@ export default {
         verifyTime: null,
         verifyBy: null,
       },
-      orderStatus: "all",
-      orderStatusList: [
-        {
-          orderStatus: "all",
-          orderStatusText: "全部",
-        },
-        {
-          orderStatus: "0",
-          orderStatusText: "待支付",
-        },
-        {
-          orderStatus: "1",
-          orderStatusText: "已支付",
-        },
-        {
-          orderStatus: "2",
-          orderStatusText: "已取消",
-        },
-        {
-          orderStatus: "3",
-          orderStatusText: "已退款",
-        },
-        {
-          orderStatus: "4",
-          orderStatusText: "已完成",
-        },
-      ],
+      orderStatus: ORDER_STATUS.ALL,
+      orderStatusList: getOrderStatusList(),
     };
   },
   created() {
@@ -380,7 +357,7 @@ export default {
     /** 核销按钮操作 */
     handleVerify(row) {
       const isNotVerify = this.selectionList.some(
-        (item) => item.orderStatus !== "1"
+        (item) => item.orderStatus !== ORDER_STATUS.PAID
       );
       if (isNotVerify) {
         return this.$modal.msgError("存在未完成订单，不能核销！");

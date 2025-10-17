@@ -237,7 +237,7 @@ export default {
     /** 导出按钮操作 */
     handleExport() {
       this.download(
-        "business/record/export",
+        "business/verifyRecord/export",
         {
           ...this.queryParams,
         },

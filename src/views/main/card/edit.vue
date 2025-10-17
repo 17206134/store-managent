@@ -170,7 +170,7 @@
                         </el-select>
                       </template>
                     </el-table-column>
-                    <el-table-column label="奖励值" align="left">
+                    <el-table-column label="*奖励值" align="left">
                       <template slot-scope="scope">
                         <el-input
                           v-model="scope.row.rewardValue"
@@ -303,7 +303,7 @@
                         </el-select>
                       </template>
                     </el-table-column>
-                    <el-table-column label="奖励值" align="left">
+                    <el-table-column label="*奖励值" align="left">
                       <template slot-scope="scope">
                         <el-input
                           v-model="scope.row.rewardValue"

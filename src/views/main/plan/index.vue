@@ -2,7 +2,7 @@
   <div class="app-container">
     <!-- 主内容区 -->
     <div class="main-content">
-      <van-form @submit="onSubmit" class="form-container">
+      <van-form class="form-container" ref="formRef">
         <!-- 表单标题区 -->
         <div class="form-header">
           <h2 class="form-title">请填写销售信息</h2>
@@ -93,7 +93,6 @@
             </template>
           </van-field>
         </transition>
-
         <!-- 流量卡选择器弹窗 -->
         <van-popup
           round
@@ -113,6 +112,34 @@
             class="custom-picker"
           />
         </van-popup>
+        <van-field
+          name="客户名称"
+          v-model="form.customerName"
+          placeholder="请输入客户名称"
+          class="form-field"
+          :rules="[{ required: true, message: '请输入客户名称' }]"
+        >
+          <template #label>
+            <span>客户名称</span>
+            <span class="required-mark">*</span>
+          </template>
+        </van-field>
+
+        <van-field
+          name="客户电话"
+          v-model="form.customerPhone"
+          placeholder="请输入客户电话"
+          class="form-field"
+          :rules="[
+            { required: true, message: '请输入客户电话' },
+            { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码' },
+          ]"
+        >
+          <template #label>
+            <span>客户电话</span>
+            <span class="required-mark">*</span>
+          </template>
+        </van-field>
 
         <!-- 联盟店信息区域（带动画显示） -->
         <transition name="slide">
@@ -159,17 +186,44 @@
 
         <!-- 提交按钮区域 -->
         <div class="submit-container">
+          <!-- 初始提交按钮 -->
           <van-button
             round
             block
             type="info"
-            native-type="submit"
-            :disabled="!form.storeName || !form.cardName"
+            @click="onSubmit"
+            :disabled="
+              !form.storeName ||
+              !form.cardName ||
+              !form.customerName ||
+              !form.customerPhone
+            "
             class="submit-btn"
             v-hasPermi="['main:plan:submit']"
+            v-if="!orderId"
           >
             提交订单
           </van-button>
+
+          <!-- 有订单时的操作按钮 -->
+          <div class="order-actions" v-if="orderId && !timeout">
+            <van-button
+              round
+              type="primary"
+              @click="reopenQrCode"
+              class="action-btn reopen-btn"
+            >
+              查看二维码
+            </van-button>
+            <van-button
+              round
+              type="default"
+              @click="resetOrder"
+              class="action-btn reset-btn"
+            >
+              重新下单
+            </van-button>
+          </div>
         </div>
       </van-form>
 
@@ -217,21 +271,54 @@
           <div class="mask" v-if="isTimeOut">该二维码已失效</div>
           <p class="qrcode-tip" v-if="!isTimeOut">请尽快使用微信扫码完成支付</p>
         </div>
+      </div>
+    </van-popup>
 
-        <!-- 链接与复制区域 -->
-        <div class="link-section" v-if="!isTimeOut">
-          <p class="link-label">支付链接</p>
-          <div class="link-container">
-            <span class="link-text" :title="linkUrl">{{ linkUrl }}</span>
-            <van-button
-              class="copy-btn"
-              :class="{ 'copy-success': copySuccess }"
-              v-clipboard:copy="linkUrl"
-              v-clipboard:success="clipboardSuccess"
-            >
-              {{ copySuccess ? "已复制" : "复制" }}
-            </van-button>
+    <!-- 信息确认弹窗 -->
+    <van-popup
+      v-model="showConfirmDialog"
+      position="center"
+      :closeable="true"
+      close-icon-position="top-right"
+      class="confirm-popup"
+    >
+      <div class="confirm-content">
+        <div class="confirm-header">
+          <h3 class="confirm-title">确认订单信息</h3>
+          <p class="confirm-desc">请确认以下信息无误后提交订单</p>
+        </div>
+
+        <div class="confirm-info">
+          <div class="info-item">
+            <span class="info-label">联盟店：</span>
+            <span class="info-value">{{ form.storeName }}</span>
           </div>
+          <div class="info-item">
+            <span class="info-label">流量卡：</span>
+            <span class="info-value">{{ form.cardName }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">客户名称：</span>
+            <span class="info-value">{{ form.customerName }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">客户电话：</span>
+            <span class="info-value">{{ form.customerPhone }}</span>
+          </div>
+        </div>
+
+        <div class="confirm-actions">
+          <van-button class="cancel-btn" @click="showConfirmDialog = false">
+            取消
+          </van-button>
+          <van-button
+            type="primary"
+            class="confirm-btn"
+            :loading="btnLoading"
+            @click="confirmSubmit"
+          >
+            确认提交
+          </van-button>
         </div>
       </div>
     </van-popup>
@@ -240,19 +327,22 @@
 <script>
 import { listStore } from "@/api/system/store";
 import { listCard } from "@/api/system/card";
-import { createOrder } from "@/api/system/order";
+import { createOrder, checkOrderStatus } from "@/api/system/order";
+import { ORDER_STATUS } from "@/constants/order";
 import QRCode from "qrcodejs2";
-const ORDER_TIME = 15 * 60 * 60 * 1000; // 默认订单超时时间15分钟
+const ORDER_TIME = 15 * 60 * 1000; // 默认订单超时时间15分钟
 export default {
   name: "Plan",
   data() {
     return {
+      ORDER_STATUS: ORDER_STATUS,
       btnLoading: false, // 防重复点击loading
       time: 0, // 15分钟订单有效期
       timeout: false, // 订单超时
       linkUrl: "",
       copySuccess: false,
       showQrCode: false, // 二维码弹窗
+      showConfirmDialog: false, // 信息确认弹窗
       showNamePicker: false, // 门店选择picker组件
       showCardPicker: false, // 流量卡选择picker组件
       selectStore: {
@@ -271,7 +361,14 @@ export default {
         storeId: "",
         cardName: null,
         cardId: null,
+        customerName: "",
+        customerPhone: "",
       },
+      orderId: "", // 订单号
+      timer: null, // 订单状态检查定时器
+      countdownStartTime: null, // 倒计时开始时间
+      visibilityHandler: null, // 页面可见性监听器
+      pageHiddenTime: null, // 页面隐藏时间
     };
   },
   filters: {
@@ -293,16 +390,133 @@ export default {
     listCard({ pageNum: 1, pageSize: 999 }).then((res) => {
       this.allCardColumns = res.rows || [];
     });
+
+    // 添加页面可见性监听
+    this.addVisibilityListener();
+  },
+  activated() {
+    // keep-alive组件激活时，重新计算倒计时
+    this.handlePageVisible();
+  },
+  deactivated() {
+    // keep-alive组件失活时，清理定时器
+    this.cleanupTimers();
+  },
+  beforeDestroy() {
+    // 组件销毁前清理定时器和监听器
+    this.cleanupTimers();
+    this.removeVisibilityListener();
   },
   methods: {
+    // 添加页面可见性监听
+    addVisibilityListener() {
+      this.visibilityHandler = () => {
+        if (document.hidden) {
+          // 页面隐藏时，记录当前时间
+          this.pageHiddenTime = Date.now();
+        } else {
+          // 页面显示时，重新计算倒计时
+          this.handlePageVisible();
+        }
+      };
+      document.addEventListener("visibilitychange", this.visibilityHandler);
+    },
+
+    // 移除页面可见性监听
+    removeVisibilityListener() {
+      if (this.visibilityHandler) {
+        document.removeEventListener(
+          "visibilitychange",
+          this.visibilityHandler
+        );
+        this.visibilityHandler = null;
+      }
+    },
+
+    // 处理页面可见时的倒计时重新计算
+    handlePageVisible() {
+      if (this.countdownStartTime && this.time > 0) {
+        const now = Date.now();
+        const elapsed = now - this.countdownStartTime;
+        const remaining = ORDER_TIME - elapsed;
+
+        if (remaining > 0) {
+          this.time = remaining;
+        } else {
+          this.time = 0;
+          this.timeout = true;
+        }
+      }
+    },
+
+    // 清理定时器
+    cleanupTimers() {
+      if (this.timer) {
+        clearInterval(this.timer);
+        this.timer = null;
+      }
+    },
+
+    checkOrderStatusFn() {
+      // 清除之前的定时器
+      if (this.timer) {
+        clearInterval(this.timer);
+        this.timer = null;
+      }
+
+      this.timer = setInterval(() => {
+        checkOrderStatus(this.orderId)
+          .then((res) => {
+            console.log(res, "订单状态");
+
+            // 检查订单状态
+            if (res.data && res.data.orderStatus === ORDER_STATUS.PAID) {
+              // 支付成功，清除定时器
+              clearInterval(this.timer);
+              this.timer = null;
+
+              // 跳转到支付成功页面
+              this.$router.push("/orderSuccess/" + this.orderId);
+            } else if (
+              res.data &&
+              res.data.orderStatus === ORDER_STATUS.CANCELLED
+            ) {
+              // 支付取消，清除定时器
+              clearInterval(this.timer);
+              this.timer = null;
+
+              // 显示支付取消提示弹窗
+              this.$dialog
+                .alert({
+                  title: "支付已取消",
+                  message: "用户已取消支付，可以重新下单",
+                  confirmButtonText: "确定",
+                })
+                .then(() => {
+                  // 点击确定后执行重新下单逻辑
+                  this.handlePaymentCancelled();
+                });
+            }
+          })
+          .catch((error) => {
+            console.error("检查订单状态失败:", error);
+          });
+      }, 2000);
+    },
     onSubmit() {
+      // 显示信息确认弹窗
+      this.showConfirmDialog = true;
+    },
+    confirmSubmit() {
       if (this.btnLoading) return;
       this.btnLoading = true;
-      const { cardId, storeId } = this.form;
-      if (cardId && storeId) {
+      const { cardId, storeId, customerName, customerPhone } = this.form;
+      if (cardId && storeId && customerName && customerPhone) {
         createOrder({
           cardId,
           storeId,
+          customerName,
+          customerPhone,
         })
           .then((res) => {
             if (res.data.orderId) {
@@ -310,8 +524,14 @@ export default {
               this.showQrCode = true;
               console.log(res, "订单号");
               this.time = ORDER_TIME;
-              this.linkUrl = `${window.location.origin}/scanCode/${res.data.orderId}`;
-              this.getUrlCanvasBase64(this.linkUrl);
+              this.countdownStartTime = Date.now(); // 记录倒计时开始时间
+              // 支付的url
+              if (res.data.qrCodeUrl) {
+                this.getUrlCanvasBase64(res.data.qrCodeUrl);
+              }
+              // 保存订单号并启动订单状态检查
+              this.orderId = res.data.orderId;
+              this.checkOrderStatusFn();
             } else {
               this.$modal.msgError("生成订单失败");
               this.timeout = true;
@@ -323,6 +543,7 @@ export default {
           })
           .finally(() => {
             this.btnLoading = false;
+            this.showConfirmDialog = false;
           });
       }
     },
@@ -333,6 +554,53 @@ export default {
     timeFinish() {
       console.log("倒计时结束");
       this.timeout = true;
+      this.countdownStartTime = null; // 清除倒计时开始时间
+    },
+
+    // 重新打开二维码弹窗
+    reopenQrCode() {
+      this.showQrCode = true;
+    },
+
+    // 处理支付取消
+    handlePaymentCancelled() {
+      // 清理定时器和轮询
+      this.cleanupTimers();
+
+      // 重置订单相关状态
+      this.orderId = null;
+      this.timeout = false;
+      this.time = ORDER_TIME;
+      this.countdownStartTime = null;
+      this.showQrCode = false;
+
+      // 清空表单
+      this.form = {
+        storeName: "",
+        cardName: "",
+        customerName: "",
+        customerPhone: "",
+        company: "",
+      };
+
+      this.$toast.success("已重置，请重新填写信息");
+    },
+
+    // 重新下单
+    resetOrder() {
+      this.$dialog
+        .confirm({
+          title: "确认重新下单",
+          message: "确定要重新下单吗？当前订单将被取消。",
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+        })
+        .then(() => {
+          this.handlePaymentCancelled();
+        })
+        .catch(() => {
+          // 用户取消
+        });
     },
     async getUrlCanvasBase64(url) {
       await this.$nextTick();
@@ -459,6 +727,46 @@ $danger-color: #ef4444;
 
     &:active {
       background-color: $bg-gray;
+    }
+  }
+
+  // 修复校验失败时placeholder变红的问题
+  &::v-deep .van-field__control {
+    &::placeholder {
+      color: $text-disabled !important;
+    }
+
+    &::-webkit-input-placeholder {
+      color: $text-disabled !important;
+    }
+
+    &::-moz-placeholder {
+      color: $text-disabled !important;
+    }
+
+    &:-ms-input-placeholder {
+      color: $text-disabled !important;
+    }
+  }
+
+  // 确保错误状态下placeholder颜色不变
+  &.van-field--error {
+    &::v-deep .van-field__control {
+      &::placeholder {
+        color: $text-disabled !important;
+      }
+
+      &::-webkit-input-placeholder {
+        color: $text-disabled !important;
+      }
+
+      &::-moz-placeholder {
+        color: $text-disabled !important;
+      }
+
+      &:-ms-input-placeholder {
+        color: $text-disabled !important;
+      }
     }
   }
 }
@@ -683,51 +991,6 @@ $danger-color: #ef4444;
         margin: 0;
       }
     }
-
-    .link-section {
-      margin-top: 15px;
-
-      .link-label {
-        font-size: 14px;
-        color: #666666;
-        margin: 0 0 8px 0;
-      }
-
-      .link-container {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background-color: #f7f7f7;
-        border-radius: 6px;
-        padding: 10px 12px;
-
-        .link-text {
-          flex: 1;
-          font-size: 13px;
-          color: #555555;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          margin-right: 10px;
-        }
-
-        .copy-btn {
-          min-width: 60px;
-          height: 32px;
-          line-height: 32px;
-          padding: 0 12px;
-          font-size: 14px;
-          border-radius: 4px;
-          background-color: #1677ff;
-          border-color: #1677ff;
-          color: #fff;
-          &.copy-success {
-            background-color: #52c41a;
-            border-color: #52c41a;
-          }
-        }
-      }
-    }
   }
 }
 
@@ -779,6 +1042,143 @@ $danger-color: #ef4444;
 ::v-deep .custom-overlay {
   background-color: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(2px);
+}
+
+// 信息确认弹窗样式
+.confirm-popup {
+  width: 85vw;
+  max-width: 400px;
+  padding: 0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+
+  .confirm-content {
+    background-color: #ffffff;
+    padding: 24px;
+    border-radius: 12px;
+
+    .confirm-header {
+      text-align: center;
+      margin-bottom: 20px;
+
+      .confirm-title {
+        font-size: 18px;
+        color: $text-primary;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .confirm-desc {
+        font-size: 14px;
+        color: $text-secondary;
+        margin: 0;
+      }
+    }
+
+    .confirm-info {
+      background-color: $bg-gray;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+
+      .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid $border-color;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .info-label {
+          font-size: 14px;
+          color: $text-secondary;
+          font-weight: 500;
+        }
+
+        .info-value {
+          font-size: 14px;
+          color: $text-primary;
+          font-weight: 500;
+          text-align: right;
+          max-width: 60%;
+          word-break: break-all;
+        }
+      }
+    }
+
+    .confirm-actions {
+      display: flex;
+      gap: 12px;
+
+      .cancel-btn {
+        flex: 1;
+        height: 44px;
+        font-size: 16px;
+        border-radius: 8px;
+        background-color: #f5f5f5;
+        border-color: #d9d9d9;
+        color: $text-secondary;
+
+        &:active {
+          background-color: #e6e6e6;
+          border-color: #bfbfbf;
+        }
+      }
+
+      .confirm-btn {
+        flex: 1;
+        height: 44px;
+        font-size: 16px;
+        font-weight: 500;
+        border-radius: 8px;
+        background-color: $primary-color;
+        border-color: $primary-color;
+
+        &:active {
+          background-color: darken($primary-color, 10%);
+          border-color: darken($primary-color, 10%);
+        }
+      }
+    }
+  }
+}
+
+// 订单操作按钮样式
+.order-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+
+  .action-btn {
+    flex: 1;
+    height: 44px;
+    font-size: 16px;
+    font-weight: 500;
+
+    &.reopen-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      color: white;
+
+      &:active {
+        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+      }
+    }
+
+    &.reset-btn {
+      background-color: #f7f8fa;
+      border: 1px solid #ebedf0;
+      color: #323233;
+
+      &:active {
+        background-color: #f2f3f5;
+        border-color: #dcdee0;
+      }
+    }
+  }
 }
 
 // 动画效果

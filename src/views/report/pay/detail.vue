@@ -263,6 +263,7 @@
 
 <script>
 import { getRecord } from "@/api/system/record";
+import { getPayStatusTagType } from "@/constants/order";
 
 export default {
   name: "PayDetail",
@@ -310,13 +311,7 @@ export default {
 
     /** 获取支付状态标签类型 */
     getPayStatusType(status) {
-      const statusMap = {
-        0: "warning", // 未支付
-        1: "success", // 已支付
-        2: "danger", // 支付失败
-        3: "info", // 已退款
-      };
-      return statusMap[status] || "info";
+      return getPayStatusTagType(status);
     },
 
     /** 获取回调状态标签类型 */
